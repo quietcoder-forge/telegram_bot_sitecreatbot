@@ -441,6 +441,7 @@ dp = Dispatcher()
 
 @dp.message(CommandStart())
 async def start(message : Message, state : FSMContext):
+    await state.clear()
     
     builder = InlineKeyboardBuilder()
     buttom1 = InlineKeyboardButton(text="🔁شروع ساخت", callback_data="bott1")
@@ -488,7 +489,9 @@ async def ai_connect(message : Message , state : FSMContext):
         if f.code == 429:
             await message.answer("سهمیه هوش مصنوعی به اتمام رسیده ❌")
         else:
-            await message.answer("خطای ناشناخته هنگام ساخت \n ممکنه سهمیه ات تموم شده باشه")
+            await message.answer("خطای ناشناخته هنگام ساخت")
+            await message.answer(f"error code : {f.code} ")
+            print(f"err message : {f.message} err status : {f.status}")
         return
 
 
@@ -505,17 +508,19 @@ async def ai_connect(message : Message , state : FSMContext):
 
     html_code = response.text
 
-    with open("site.html", "w",  encoding="utf-8") as f:
-        f.write(html_code)
+    
 
-    document = FSInputFile("site.html")
+    document = BufferedInputFile(
+        html_code.encode('utf-8'),
+        filename="site.html"
+    )
     await message.answer_document(
         document=document,
         caption="سایت ساخته شد ! برای مشاهده روی فایل کلیک کن  \n برای ساخت دوباره روی دیکمه زیر ضربه بزن",
         reply_markup=builder2.as_markup()
 
     )
-    os.remove("site.html")
+    
 
 
 @dp.callback_query(F.data == "bott2")
